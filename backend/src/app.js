@@ -8,6 +8,7 @@ const InviteToken = require('./models/InviteTokenModel');
 
 const authRoutes = require('./routes/authRoutes');
 const inviteRoutes = require('./routes/inviteRoutes');
+const jobRoutes = require('./routes/jobRoutes');
 
 const morgan = require('morgan');
 const cors = require('cors');
@@ -26,6 +27,7 @@ app.use(cors());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/invite', inviteRoutes);
+app.use('/api/jobs', jobRoutes);
 console.log("In app.js");
 
 app.get('/', (req, res) => {
