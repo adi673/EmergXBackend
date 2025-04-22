@@ -1,3 +1,4 @@
+//backend/src/utils/jwtUtils.js
 const jwt = require('jsonwebtoken');
 
 const secret = 'mysecretkey';

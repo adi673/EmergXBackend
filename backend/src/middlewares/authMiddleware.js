@@ -1,3 +1,4 @@
+//backend/src/middlewares/authMiddleware.js
 const { verifyToken } = require('../utils/jwtUtils');
 const User = require('../models/UserModel');
 exports.authMiddleware = async (req, res, next) => {

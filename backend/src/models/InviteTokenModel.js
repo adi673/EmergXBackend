@@ -1,3 +1,4 @@
+//backend/src/models/InviteTokenModel.js
 const mongoose = require('mongoose');
 
 const inviteTokenSchema = new mongoose.Schema({

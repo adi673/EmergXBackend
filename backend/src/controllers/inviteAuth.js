@@ -1,3 +1,4 @@
+//backend/src/controllers/inviteAuth.js
 const { v4: uuidv4 } = require('uuid');
 const InviteToken = require('../models/InviteTokenModel');
 const User = require('../models/UserModel');
@@ -36,8 +37,8 @@ exports.generateInviteToken = async (req, res) => {
 
 
 exports.registerEmployee = async (req, res) => {
-    const { fullName, email, password, mobileNumber, inviteToken } = req.body;
-
+    const { fullName, email, password, mobileNumber, companyName } = req.body;
+        let inviteToken=companyName;
     try {
         const tokenDoc = await InviteToken.findOne({ token: inviteToken });
 
@@ -73,7 +74,13 @@ exports.registerEmployee = async (req, res) => {
         const jwtToken = generatejwtToken(newUser);
         res.cookie('token', jwtToken, { httpOnly: true, secure: true });
 
-        res.status(201).json({ success: true, message: 'Employee registered successfully', token: jwtToken });
+        res.status(201).json({ success: true, message: 'Employee registered successfully',companyId: tokenDoc.companyId, token: jwtToken });
+        res.status(201).json({
+            message: 'Company and CEO registered successfully!',
+            token: jwtToken,
+            companyId: newCompany._id,
+            user: newUser,
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: 'Server error' });

@@ -1,3 +1,4 @@
+//backend/src/controllers/authController.js
 const bcrypt = require('bcrypt');
 const User = require('../models/UserModel.js');
 const Company = require('../models/CompanyModel.js');
@@ -9,7 +10,10 @@ exports.registerCEOAndCompany = async (req, res) => {
     try {
         // Check if company already exists
         const existingCompany = await Company.findOne({ companyName });
+        console.log("Came here ater try");
+
         if (existingCompany) {
+            console.log("Comany exist");
             return res.status(400).json({ success: false, message: 'Company with this name already exists.' });
         }
 
@@ -24,13 +28,14 @@ exports.registerCEOAndCompany = async (req, res) => {
             mobileNumber,
             role: 'ceo'
         });
-        
+        console.log("new user created");
         // Create company (assigning CEO as createdBy)
         const newCompany = new Company({
             companyName,
             businessEmail,
             createdBy: newCEO._id
         });
+        console.log("new comp created");
         
 
         // Update the company with CEO details
@@ -45,11 +50,12 @@ exports.registerCEOAndCompany = async (req, res) => {
         // const token = generateToken(savedCompany._id, savedCEO._id);
 
         // Respond with success
+        console.log("suces");
         res.status(201).json({
             message: 'Company and CEO registered successfully!',
             token: jwtToken,
-            company: newCompany,
-            ceo: newCEO,
+            companyId: newCompany._id,
+            user: newCEO,
         });
     } catch (error) {
         console.error(error);
@@ -60,12 +66,18 @@ exports.registerCEOAndCompany = async (req, res) => {
 
 exports.login = async (req, res) => {
     const { email, password } = req.body;
+    console.log(email,password);
     try {
         const user = await User.findOne({ email });
-        if (!user) return res.status(400).json({ success: false, message: 'User not found' });
+        if (!user) {
+            console.log("user not found");
+             return res.status(400).json({ success: false, message: 'User not found' })
+            };
 
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(400).json({ success: false, message: 'Invalid credentials' });
+        if (!isMatch) {
+            console.log("password not matching");
+            return res.status(400).json({ success: false, message: 'Invalid credentials' })};
 
         const token = generatejwtToken(user);
         res.cookie('token', token, { httpOnly: true, secure: true });

@@ -1,4 +1,4 @@
-
+//backend/src/controllers/jobController.js
 const Job = require('../models/JobModel');
 const Company = require('../models/CompanyModel');
 const mongoose = require('mongoose');
@@ -12,17 +12,17 @@ exports.createJob = async (req, res) => {
             skills,
             location,
             employmentType,
-            fieldOfStudy,
             minExperience,
             salaryRange,
             duration,
             startDate
         } = req.body;
+        console.log(req.body);
 
         // Check if required fields are present
         if (
             !companyId || !jobTitle || !jobDescription || !skills || !location ||
-            !employmentType || !fieldOfStudy || minExperience === undefined ||
+            !employmentType || minExperience === undefined ||
             !salaryRange || salaryRange.min === undefined || salaryRange.max === undefined
         ) {
             return res.status(400).json({
@@ -98,7 +98,6 @@ exports.createJob = async (req, res) => {
             skills,
             location,
             employmentType,
-            fieldOfStudy,
             minExperience,
             salaryRange,
             duration,
@@ -128,7 +127,7 @@ exports.createJob = async (req, res) => {
 exports.getAllJobs = async (req, res) => {
   try {
     const { companyId } = req.query;
-
+    console.log(companyId);
     const filter = {};
 
     // Validate ObjectId

@@ -1,3 +1,4 @@
+//backend/src/models/JobModel.js
 const mongoose = require('mongoose');
 
 const jobSchema = new mongoose.Schema({
@@ -25,10 +26,6 @@ const jobSchema = new mongoose.Schema({
   employmentType: {
     type: String,
     enum: ['Full-time', 'Part-time', 'Internship', 'Contract', 'Temporary'],
-    required: true
-  },
-  fieldOfStudy: {
-    type: String,
     required: true
   },
   minExperience: {

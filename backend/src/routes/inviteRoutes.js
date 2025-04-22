@@ -1,3 +1,4 @@
+//backend/src/routes/inviteRoutes.js
 const express = require('express');
 const router = express.Router();
 
