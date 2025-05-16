@@ -1,7 +1,7 @@
 //backend/src/utils/jwtUtils.js
 const jwt = require('jsonwebtoken');
-
-const secret = 'mysecretkey';
+require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
+const secret = process.env.JWT_SECRET;
 
 module.exports.generatejwtToken = (user) => {
   return jwt.sign({ id: user._id, email: user.email, role: user.role }, secret, { expiresIn: '1h' });

@@ -8,19 +8,36 @@ exports.registerCEOAndCompany = async (req, res) => {
     const { fullName, email, password, mobileNumber, companyName, businessEmail } = req.body;
 
     try {
-        // Check if company already exists
+        // ✅ Check if company already exists
         const existingCompany = await Company.findOne({ companyName });
-        console.log("Came here ater try");
-
         if (existingCompany) {
-            console.log("Comany exist");
             return res.status(400).json({ success: false, message: 'Company with this name already exists.' });
         }
 
-        // Hash the CEO password
+        // ✅ Check if the same business email is already used by another company
+        const emailConflictCompany = await Company.findOne({
+            businessEmail,
+            companyName: { $ne: companyName } // Not the same company name
+        });
+
+        if (emailConflictCompany) {
+            return res.status(400).json({ success: false, message: 'Business email is already used by another company.' });
+        }
+
+        // ✅ Check if user with the same email already exists
+        // const existingUser = await User.findOne({ email });
+        // if (existingUser) {
+        //     return res.status(400).json({
+        //         success: false,
+        //         message: 'User with this email already exists.'
+        //     });
+        // }
+
+        // ✅ Hash the password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-        // Create CEO user
+
+        // ✅ Create user
         const newCEO = new User({
             fullName,
             email,
@@ -28,40 +45,49 @@ exports.registerCEOAndCompany = async (req, res) => {
             mobileNumber,
             role: 'ceo'
         });
-        console.log("new user created");
-        // Create company (assigning CEO as createdBy)
+
+        // ✅ Create company
         const newCompany = new Company({
             companyName,
             businessEmail,
             createdBy: newCEO._id
         });
-        console.log("new comp created");
-        
 
-        // Update the company with CEO details
+        // ✅ Link user to company
         newCEO.companyId = newCompany._id;
+
+        // ✅ Save both
         await newCompany.save();
         await newCEO.save();
-        // await savedCompany.save();
+
+        // ✅ Generate JWT
         const jwtToken = generatejwtToken(newCEO);
         res.cookie('token', jwtToken, { httpOnly: true, secure: true });
 
-        // Optionally: Generate an invite token for the CEO to invite employees
-        // const token = generateToken(savedCompany._id, savedCEO._id);
-
-        // Respond with success
-        console.log("suces");
+        // ✅ Respond
         res.status(201).json({
             message: 'Company and CEO registered successfully!',
             token: jwtToken,
             companyId: newCompany._id,
             user: newCEO,
         });
+
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal Server Error' });
+
+        // ✅ Handle MongoDB duplicate key errors clearly
+        if (error.code === 11000) {
+            const duplicatedField = Object.keys(error.keyPattern)[0];
+            return res.status(400).json({
+                success: false,
+                message: `A record with this ${duplicatedField} already exists.`,
+            });
+        }
+
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
 };
+
 
 
 exports.login = async (req, res) => {

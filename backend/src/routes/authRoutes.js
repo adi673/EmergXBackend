@@ -6,7 +6,7 @@ const { registerCEOAndCompany, login, logout } = require('../controllers/authCon
 const { validateRegister } = require('../middlewares/validationMiddleware.js');
 
 // router.post('/register', validateRegister, registerCEOAndCompany);
-router.post('/register', registerCEOAndCompany);
+router.post('/register', validateRegister, registerCEOAndCompany);
 router.post('/login', login);
 router.post('/logout', logout);
 

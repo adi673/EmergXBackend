@@ -1,4 +1,3 @@
-//backend/src/middlewares/validationMiddleware.js
 const { body, validationResult } = require('express-validator');
 
 exports.validateRegister = [
@@ -32,23 +31,25 @@ exports.validateRegister = [
 
     body('businessEmail')
         .isEmail()
-        .withMessage('A valid business email is required'),
-    
+        .withMessage('A valid business email is required')
+        .custom((value, { req }) => {
+            if (value === req.body.email) {
+                throw new Error('Business email must be different from personal email');
+            }
+            return true;
+        }),
+
     // Final middleware to handle errors
     (req, res, next) => {
-        console.log("MIdle ware here")
-        // const errors = validationResult(req);
-        // if (!errors.isEmpty()) {
-        //     return res.status(400).json({ success: false, errors: errors.array() });
-        // }
-        .catch((error) => {
-            if (error.response && error.response.data?.errors) {
-              console.log("Validation Errors:", error.response.data.errors);
-            } else {
-              console.log("Unknown error", error);
-            }
-          });
-          
+        console.log("Middleware here");
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: "Validation failed. Fields are missing or incorrect.",
+                errors: errors.array()
+            });
+        }
         next();
     }
 ];
