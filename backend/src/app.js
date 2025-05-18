@@ -15,7 +15,11 @@ const errorHandler = require('./middlewares/errorHandler');
 const authRoutes = require('./routes/authRoutes');
 const inviteRoutes = require('./routes/inviteRoutes');
 const jobRoutes = require('./routes/jobRoutes');
+const authCandidateRoutes = require('./routes/candidateRoutes/authCandidate');
+// const authAdminRoutes = require('./routes/adminRoutes/authAdmin');
+const postJobRoutes = require('./routes/adminRoutes/postJobsRoutes');
 
+const candidateJobRoutes = require('./routes/candidateRoutes/JobRoutes');
 const app = express();
 
 // ✅ Create logs directory if not exists
@@ -44,17 +48,31 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 // ✅ CORS
+// app.use(cors({
+//   origin: 'http://localhost:3003',
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization'],
+// }));
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: true, // Reflects request origin
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
+
 // ✅ Routes
+//company Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/invite', inviteRoutes);
 app.use('/api/jobs', jobRoutes);
+
+//candidate Routes
+app.use('/api/auth/candidate', authCandidateRoutes);
+app.use('/api/candidate/jobs', candidateJobRoutes);
+
+//Admin Routes
+// app.use('/api/admin',authAdminRoutes)
+app.use('/api/admin/jobs', postJobRoutes);
 
 // ✅ Test route
 app.get('/', (req, res) => {
