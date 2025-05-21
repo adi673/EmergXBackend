@@ -40,7 +40,7 @@ ${jd}
         if (parsed.score > 85) {
             parsed.score = 95;
         }
-        res.status(200).json({ success: true, parsed });
+        res.status(200).json({ success: true, result:parsed });
     } catch (error) {
         console.error('Error analyzing CV:', error);
         res.status(500).json({ success: false, message: 'Server error' });
