@@ -15,7 +15,8 @@ exports.postJob = async (req, res) => {
       startDate,
       externalLink,
       companyName,
-      qualifications
+      qualifications,
+      tags
     } = req.body;
 
     // Validate required fields for admin-uploaded job
@@ -39,7 +40,8 @@ exports.postJob = async (req, res) => {
       startDate,
       externalLink,
       companyName,
-      qualifications
+      qualifications,
+      tags
     });
 
     await newJob.save();

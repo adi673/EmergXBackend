@@ -24,7 +24,7 @@ exports.updateScore = async (req, res) => {
 
 exports.getTop10AndUserScoreWithRank = async (req, res) => {
   const { interviewId, candidateId } = req.params;
-
+  
   try {
     // Get top 10 scores for the interview
     const top10 = await Leaderboard.find({ interviewId })

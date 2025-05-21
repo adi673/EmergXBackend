@@ -72,6 +72,12 @@ const jobSchema = new mongoose.Schema({
   },
   qualifications: {
     type: [String],
+  },
+  // ✅ Inline enum for tags
+  tags: {
+    type: [String],
+    enum: ['Software', 'AI/ML', 'Data Science', 'Design', 'Marketing', 'Consulting', 'Business'],
+    default: []
   }
 }, {
   timestamps: true
