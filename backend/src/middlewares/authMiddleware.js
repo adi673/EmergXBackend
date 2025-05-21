@@ -1,9 +1,9 @@
 //backend/src/middlewares/authMiddleware.js
 const { verifyToken } = require('../utils/jwtUtils');
-const User = require('../models/UserModel');
+const Candidate = require('../models/CandidateModel');
 exports.authMiddleware = async (req, res, next) => {
     var token = req.cookies.token;
-
+    console.log("Token : ", token)
     const authHeader = req.headers['authorization'];
     // console.log("Auth Header : ", authHeader)
     if (!authHeader) {
@@ -30,11 +30,12 @@ exports.authMiddleware = async (req, res, next) => {
         // }
         const decoded = verifyToken(token);
         // console.log(decoded)
-        const user = await User.findOne({ _id: decoded.id });
+        const user = await Candidate.findOne({ _id: decoded.id });
         // console.log("User", user);
         req.user = user;
+        // console.log("User :",user)
         // console.log(req.user.role);
-        console.log("Going next ")
+        // console.log("Going next ")
         next();
     } catch (err) {
         //console.log("Sending token is invalid")

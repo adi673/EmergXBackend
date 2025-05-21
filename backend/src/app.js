@@ -18,6 +18,8 @@ const jobRoutes = require('./routes/jobRoutes');
 const authCandidateRoutes = require('./routes/candidateRoutes/authCandidate');
 // const authAdminRoutes = require('./routes/adminRoutes/authAdmin');
 const postJobRoutes = require('./routes/adminRoutes/postJobsRoutes');
+const interviewRoutes = require('./routes/interviewRoutes/interviewRoutes');
+const cvAnalyzerRoutes = require('./routes/candidateRoutes/cvAnalyzerRoute');
 
 const candidateJobRoutes = require('./routes/candidateRoutes/JobRoutes');
 const app = express();
@@ -66,9 +68,13 @@ app.use('/api/auth', authRoutes);
 app.use('/api/invite', inviteRoutes);
 app.use('/api/jobs', jobRoutes);
 
+//interview Route
+app.use('/api/interview', interviewRoutes);
+
 //candidate Routes
 app.use('/api/auth/candidate', authCandidateRoutes);
 app.use('/api/candidate/jobs', candidateJobRoutes);
+app.use('/api/candidate/cv', cvAnalyzerRoutes);
 
 //Admin Routes
 // app.use('/api/admin',authAdminRoutes)

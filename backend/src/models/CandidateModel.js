@@ -37,7 +37,20 @@ const candidateSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-  }
+  },
+  questionnaire: { 
+    rolePreferences: [String],
+    locations: [String],
+    experienceLevels: [String],
+    companySizePreferences: {
+      earlyStartup: Number,
+      midStartup: Number,
+      lateStartup: Number,
+    },
+    jobRoles: [String],
+  },
+  resumeUrl: { type: String, default: '' },
+  extractedData: { type: mongoose.Schema.Types.Mixed, default: null }
 });
 
 // Compare password only for local users

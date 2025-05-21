@@ -22,7 +22,7 @@ exports.googleLogin = async (req, res) => {
     // 2. Find or create user
     let user = await Candidate.findOne({ email });
     if (!user) {
-        
+
       user = await Candidate.create({
         email,
         fullName: name,
@@ -54,9 +54,9 @@ exports.googleLogin = async (req, res) => {
 
 
 exports.googleAuth = async (req, res) => {
-    const { idToken} = req.body;
+  const { idToken } = req.body;
 
-    console.log("token",idToken)
+  console.log("token", idToken)
   try {
     // 1. Verify Google token
     const ticket = await client.verifyIdToken({
@@ -76,16 +76,36 @@ exports.googleAuth = async (req, res) => {
 
     // 3. If not exists, auto sign up
     if (!user) {
-        console.log("user not found making new user")
+      console.log("user not found making new user")
       user = await Candidate.create({
-        email,
         fullName: name,
-        googleId,
-        role: 'candidate', // default role
+        email,
+        role: 'candidate',
         authProvider: 'google',
+
+        // Initialize questionnaire as empty arrays/objects
+        questionnaire: {
+          rolePreferences: [],
+          locations: [],
+          experienceLevels: [],
+          companySizePreferences: {
+            earlyStartup: 0,
+            midStartup: 0,
+            lateStartup: 0,
+          },
+          jobRoles: [],
+        },
+
+        // Top-level fields according to your schema
+        resumeUrl: '',
+        extractedData: null,
       });
+
+
+      //new added 
+      isNewUser = true;
     } else {
-        console.log("user found already logging in")
+      console.log("user found already logging in")
       // Optional: check if login method matches
       if (user.authProvider !== 'google') {
         return res.status(403).json({
@@ -93,6 +113,7 @@ exports.googleAuth = async (req, res) => {
           message: 'Email registered with a different method. Use password login.',
         });
       }
+      isNewUser = false;
     }
 
     // 4. Generate JWT
@@ -109,6 +130,7 @@ exports.googleAuth = async (req, res) => {
       success: true,
       message: 'Authenticated successfully',
       token: jwtToken,
+      isNewUser:isNewUser,
       user,
     });
 
@@ -117,3 +139,58 @@ exports.googleAuth = async (req, res) => {
     res.status(500).json({ success: false, message: 'Google login/signup failed' });
   }
 };
+
+// PATCH /api/candidate/questionnaire
+exports.updateQuestionnaire = async (req, res) => {
+  try {
+    const userId = req.user.id; // Extracted from JWT middleware
+
+    const {
+      rolePreferences,
+      locations,
+      experienceLevels,
+      companySizePreferences,
+      jobRoles,
+      resumeUrl,
+      extractedData
+    } = req.body;
+
+    // Build update object
+    const updateData = {
+      questionnaire: {
+        rolePreferences,
+        locations,
+        experienceLevels,
+        companySizePreferences,
+        jobRoles,
+      },
+      resumeUrl,
+      extractedData
+    };
+
+    // Update the candidate profile
+    const updatedCandidate = await Candidate.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedCandidate) {
+      return res.status(404).json({
+        success: false,
+        message: 'Candidate not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Questionnaire updated successfully',
+      user: updatedCandidate,
+    });
+
+  } catch (err) {
+    console.error('Error saving questionnaire:', err);
+    res.status(500).json({ success: false, message: 'Failed to save questionnaire' });
+  }
+};
+
