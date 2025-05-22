@@ -101,6 +101,18 @@ exports.googleAuth = async (req, res) => {
         extractedData: null,
       });
 
+      await CandidateProfile.create({
+        userId: user._id,
+        name: user.fullName,
+        about_me: '',
+        Languages: [],
+        work_experience: [],
+        education: [],
+        skills: [],
+        Projects: [],
+        certifications: []
+      });
+
 
       //new added 
       isNewUser = true;
