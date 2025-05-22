@@ -3,7 +3,7 @@ const { OAuth2Client } = require('google-auth-library');
 const jwt = require('jsonwebtoken');
 const { generatejwtToken } = require('../../utils/jwtUtils');
 const Candidate = require('../../models/CandidateModel');
-
+const CandidateProfile = require('../../models/CandidateProfileModel');
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 exports.googleLogin = async (req, res) => {
@@ -101,6 +101,18 @@ exports.googleAuth = async (req, res) => {
         extractedData: null,
       });
 
+      await CandidateProfile.create({
+        userId: user._id,
+        name: user.fullName,
+        about_me: '',
+        Languages: [],
+        work_experience: [],
+        education: [],
+        skills: [],
+        Projects: [],
+        certifications: []
+      });
+
 
       //new added 
       isNewUser = true;
@@ -191,6 +203,56 @@ exports.updateQuestionnaire = async (req, res) => {
   } catch (err) {
     console.error('Error saving questionnaire:', err);
     res.status(500).json({ success: false, message: 'Failed to save questionnaire' });
+  }
+};
+
+// PATCH /api/candidate/update-profile
+exports.updateProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const {
+      name,
+      about_me,
+      Languages,
+      work_experience,
+      education,
+      skills,
+      Projects,
+      certifications
+    } = req.body;
+
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (about_me !== undefined) updateData.about_me = about_me;
+    if (Languages !== undefined) updateData.Languages = Languages;
+    if (work_experience !== undefined) updateData.work_experience = work_experience;
+    if (education !== undefined) updateData.education = education;
+    if (skills !== undefined) updateData.skills = skills;
+    if (Projects !== undefined) updateData.Projects = Projects;
+    if (certifications !== undefined) updateData.certifications = certifications;
+
+    const updatedProfile = await CandidateProfile.findOneAndUpdate(
+      { userId },
+      updateData,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedProfile) {
+      return res.status(404).json({
+        success: false,
+        message: 'Candidate profile not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully',
+      profile: updatedProfile,
+    });
+  } catch (err) {
+    console.error('Error updating profile:', err);
+    res.status(500).json({ success: false, message: 'Failed to update profile' });
   }
 };
 
