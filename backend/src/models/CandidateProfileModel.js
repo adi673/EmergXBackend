@@ -11,13 +11,13 @@ const candidateProfileSchema = new mongoose.Schema({
     required: true 
   },
   about_me: { 
-    type: String, 
-    required: true 
+    type: String 
   },        
-  Languages: [                                    
+  Languages: [
     {
-      language: String,
-      proficiency: String,
+      language: { type: String, required: true },
+      proficiency: { type: String, required: true },
+      _id: false
     }
   ],
   work_experience: [                                
@@ -27,6 +27,7 @@ const candidateProfileSchema = new mongoose.Schema({
       start_date: String,                           
       end_date: String,
       description: String,
+      _id: false
     }
   ],
   education: [
@@ -35,7 +36,8 @@ const candidateProfileSchema = new mongoose.Schema({
       degree: String,
       start_year: Number,                          
       end_year: Number,
-      grade: String,                           
+      grade: String,
+      _id: false
     }
   ],
   skills: [String],
@@ -45,6 +47,7 @@ const candidateProfileSchema = new mongoose.Schema({
       description: String,
       technologies: [String],
       link: String,
+      _id: false
     }
   ],
   certifications: [
@@ -53,9 +56,9 @@ const candidateProfileSchema = new mongoose.Schema({
       issuing_organization: String,      
       issue_date: String,
       link: String,
+      _id: false
     }
   ]
 }, { timestamps: true });
-
 
 module.exports = mongoose.model('CandidateProfile', candidateProfileSchema);

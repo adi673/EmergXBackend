@@ -6,6 +6,7 @@ const Candidate = require('../../models/CandidateModel');
 const CandidateProfile = require('../../models/CandidateProfileModel');
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+//this cotroller is not getting used
 exports.googleLogin = async (req, res) => {
   const { idToken } = req.body;
 
@@ -130,6 +131,7 @@ exports.googleAuth = async (req, res) => {
 
     // 4. Generate JWT
     const jwtToken = generatejwtToken(user);
+    console.log("jwtToken", jwtToken)
 
     // 5. Send cookie/token
     res.cookie('token', jwtToken, {
@@ -142,7 +144,7 @@ exports.googleAuth = async (req, res) => {
       success: true,
       message: 'Authenticated successfully',
       token: jwtToken,
-      isNewUser:isNewUser,
+      isNewUser: isNewUser,
       user,
     });
 
@@ -222,15 +224,44 @@ exports.updateProfile = async (req, res) => {
       certifications
     } = req.body;
 
+    // First, fetch the current profile to retain existing values
+    const currentProfile = await CandidateProfile.findOne({ userId });
+    if (!currentProfile) {
+      return res.status(404).json({
+        success: false,
+        message: 'Candidate profile not found',
+      });
+    }
+
     const updateData = {};
+
     if (name !== undefined) updateData.name = name;
     if (about_me !== undefined) updateData.about_me = about_me;
-    if (Languages !== undefined) updateData.Languages = Languages;
-    if (work_experience !== undefined) updateData.work_experience = work_experience;
-    if (education !== undefined) updateData.education = education;
-    if (skills !== undefined) updateData.skills = skills;
-    if (Projects !== undefined) updateData.Projects = Projects;
-    if (certifications !== undefined) updateData.certifications = certifications;
+
+    if (Languages !== undefined) {
+      //condition for if language is coming as language:[] only nothing inside it.
+      updateData.Languages = Languages.length > 0 ? Languages : currentProfile.Languages;
+    }
+
+    if (work_experience !== undefined) {
+      updateData.work_experience = work_experience.length > 0 ? work_experience : currentProfile.work_experience;
+    }
+
+    if (education !== undefined) {
+      updateData.education = education.length > 0 ? education : currentProfile.education;
+    }
+
+    if (skills !== undefined) {
+      updateData.skills = skills.length > 0 ? skills : currentProfile.skills;
+    }
+
+    if (Projects !== undefined) {
+      updateData.Projects = Projects.length > 0 ? Projects : currentProfile.Projects;
+    }
+
+    if (certifications !== undefined) {
+      updateData.certifications = certifications.length > 0 ? certifications : currentProfile.certifications;
+    }
 
     const updatedProfile = await CandidateProfile.findOneAndUpdate(
       { userId },
@@ -238,21 +269,14 @@ exports.updateProfile = async (req, res) => {
       { new: true, runValidators: true }
     );
 
-    if (!updatedProfile) {
-      return res.status(404).json({
-        success: false,
-        message: 'Candidate profile not found',
-      });
-    }
-
     res.status(200).json({
       success: true,
       message: 'Profile updated successfully',
       profile: updatedProfile,
     });
+
   } catch (err) {
     console.error('Error updating profile:', err);
     res.status(500).json({ success: false, message: 'Failed to update profile' });
   }
 };
-
