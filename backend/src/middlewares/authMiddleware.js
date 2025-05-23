@@ -3,7 +3,7 @@ const { verifyToken } = require('../utils/jwtUtils');
 const Candidate = require('../models/CandidateModel');
 exports.authMiddleware = async (req, res, next) => {
     var token = req.cookies.token;
-    console.log("Token : ", token)
+    
     const authHeader = req.headers['authorization'];
     // console.log("Auth Header : ", authHeader)
     if (!authHeader) {
@@ -11,7 +11,7 @@ exports.authMiddleware = async (req, res, next) => {
     }
     token = authHeader.split(' ')[1]; // Bearer <token>
 
-
+    console.log("Token : ", token)
     if (!token) {
         return res.status(401).json({ success: false, message: 'No token, authorization denied' });
     }

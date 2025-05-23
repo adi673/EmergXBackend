@@ -5,55 +5,9 @@ const { generatejwtToken } = require('../../utils/jwtUtils');
 const Candidate = require('../../models/CandidateModel');
 const CandidateProfile = require('../../models/CandidateProfileModel');
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const axios = require('axios');
 
-//this cotroller is not getting used
-exports.googleLogin = async (req, res) => {
-  const { idToken } = req.body;
-
-  try {
-    // 1. Verify token with Google
-    const ticket = await client.verifyIdToken({
-      idToken,
-      audience: process.env.GOOGLE_CLIENT_ID
-    });
-    const payload = ticket.getPayload();
-
-    const { email, name, sub: googleId } = payload;
-
-    // 2. Find or create user
-    let user = await Candidate.findOne({ email });
-    if (!user) {
-
-      user = await Candidate.create({
-        email,
-        fullName: name,
-        googleId,
-        role: 'candidate', // default role
-        authProvider: 'google',
-      });
-    }
-
-    // 3. Create your own JWT
-    const jwtToken = generatejwtToken(user);
-
-    // Optional: Set cookie
-    res.cookie('token', jwtToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'Strict',
-    });
-
-    res.json({ success: true, token: jwtToken, user });
-  } catch (err) {
-    console.error('Google login error:', err);
-    res.status(401).json({ success: false, message: 'Invalid Google token' });
-  }
-};
-
-
-
-
-
+//Pop Up google auth controller not using it
 exports.googleAuth = async (req, res) => {
   const { idToken } = req.body;
 
@@ -154,6 +108,113 @@ exports.googleAuth = async (req, res) => {
   }
 };
 
+//Redirect google Auth Controller
+exports.redirectGoogleAuth = async (req, res) => {
+  const code = req.query.code;
+  if (!code) return res.status(400).send('Missing code');
+
+  try {
+    // 1. Exchange code for tokens
+    const tokenResponse = await axios.post(
+      'https://oauth2.googleapis.com/token',
+      new URLSearchParams({
+        code,
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        redirect_uri: 'http://localhost:3003/api/auth/candidate/google/callback',
+        grant_type: 'authorization_code',
+      }).toString(),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      }
+    );
+
+    const { id_token } = tokenResponse.data;
+
+    // 2. Verify the ID token
+    const ticket = await client.verifyIdToken({
+      idToken: id_token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, sub: googleId } = payload;
+
+    if (!email) {
+      return res.status(400).send('Invalid Google token (missing email)');
+    }
+
+    // 3. Check if user exists or create new one
+    let user = await Candidate.findOne({ email });
+    let isNewUser = false;
+
+    if (!user) {
+      user = await Candidate.create({
+        fullName: name,
+        email,
+        role: 'candidate',
+        authProvider: 'google',
+        questionnaire: {
+          rolePreferences: [],
+          locations: [],
+          experienceLevels: [],
+          companySizePreferences: {
+            earlyStartup: 0,
+            midStartup: 0,
+            lateStartup: 0,
+          },
+          jobRoles: [],
+        },
+        resumeUrl: '',
+        extractedData: null,
+      });
+
+      await CandidateProfile.create({
+        userId: user._id,
+        name: user.fullName,
+        about_me: '',
+        Languages: [],
+        work_experience: [],
+        education: [],
+        skills: [],
+        Projects: [],
+        certifications: [],
+      });
+
+      isNewUser = true;
+    } else {
+      if (user.authProvider !== 'google') {
+        return res.status(403).json({
+          success: false,
+          message: 'Email registered using a different method.',
+        });
+      }
+    }
+
+    // 4. Generate JWT
+    const jwtToken = generatejwtToken(user);
+
+    // 5. Set as cookie
+    res.cookie('token', jwtToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
+    });
+
+    // 6. Redirect back to frontend
+    // let redirectUrl = 'http://localhost:3000/dashboard';
+    const redirectUrl = `http://localhost:3000/google/success?token=${jwtToken}&newUser=${isNewUser}`;
+
+    return res.redirect(redirectUrl);
+  } catch (error) {
+    console.error('Google OAuth callback error:', error);
+    return res.status(500).send('Google OAuth callback error');
+  }
+};
+
+
 // PATCH /api/candidate/questionnaire
 exports.updateQuestionnaire = async (req, res) => {
   try {
@@ -236,7 +297,9 @@ exports.updateProfile = async (req, res) => {
     const updateData = {};
 
     if (name !== undefined) updateData.name = name;
-    if (about_me !== undefined) updateData.about_me = about_me;
+    if (about_me !== undefined) {
+      updateData.about_me = about_me.trim().length > 0 ? about_me : currentProfile.about_me;
+    }
 
     if (Languages !== undefined) {
       //condition for if language is coming as language:[] only nothing inside it.
@@ -278,5 +341,32 @@ exports.updateProfile = async (req, res) => {
   } catch (err) {
     console.error('Error updating profile:', err);
     res.status(500).json({ success: false, message: 'Failed to update profile' });
+  }
+};
+
+
+exports.getCandidateProfile = async (req, res) => {
+  try {
+    const userId = req.user.id; // Make sure JWT middleware sets this
+    console.log(req.user)
+    const profile = await CandidateProfile.findOne({ userId });
+
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        message: 'Candidate profile not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      profile,
+    });
+  } catch (err) {
+    console.error('Error fetching candidate profile:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch candidate profile',
+    });
   }
 };
