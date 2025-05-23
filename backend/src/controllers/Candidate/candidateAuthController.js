@@ -284,7 +284,7 @@ exports.updateProfile = async (req, res) => {
       Projects,
       certifications
     } = req.body;
-
+    console.log(req.body)
     // First, fetch the current profile to retain existing values
     const currentProfile = await CandidateProfile.findOne({ userId });
     if (!currentProfile) {
