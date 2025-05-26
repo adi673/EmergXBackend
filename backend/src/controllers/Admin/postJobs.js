@@ -18,7 +18,7 @@ exports.postJob = async (req, res) => {
       qualifications,
       tags
     } = req.body;
-
+    // console.log(req.body);
     // Validate required fields for admin-uploaded job
     if (
       !jobTitle || !jobDescription || !skills || !location || !employmentType ||

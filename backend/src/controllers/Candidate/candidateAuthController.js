@@ -214,6 +214,26 @@ exports.redirectGoogleAuth = async (req, res) => {
   }
 };
 
+// GET /api/candidate/me
+exports.getCurrentCandidate = async (req, res) => {
+  try {
+    const userId = req.user.id; // Extracted from JWT middleware
+
+    // Exclude the `questionnaire` field using .select()
+    const user = await Candidate.findById(userId).select('-questionnaire');
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.status(200).json({ success: true, user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Error retrieving user' });
+  }
+};
+
+
 
 // PATCH /api/candidate/questionnaire
 exports.updateQuestionnaire = async (req, res) => {

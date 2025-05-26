@@ -5,13 +5,15 @@ const debug = require('debug')('server:server');
 
 const port = normalizePort(process.env.PORT || '3001');
 app.set('port', port);
+const PORT = process.env.PORT || 3003;
+
 
 const server = http.createServer(app);
 
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
-
+console.log(`Server running on http://localhost:${PORT}`);
 function normalizePort(val) {
     const port = parseInt(val, 10);
     if (isNaN(port)) {
@@ -45,5 +47,6 @@ function onError(error) {
 function onListening() {
     const addr = server.address();
     const bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
+    console.log(`Server running on http://localhost:${PORT}`);
     debug('Listening on ' + bind);
 }

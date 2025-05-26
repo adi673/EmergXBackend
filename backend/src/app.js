@@ -20,7 +20,7 @@ const authCandidateRoutes = require('./routes/candidateRoutes/authCandidate');
 const postJobRoutes = require('./routes/adminRoutes/postJobsRoutes');
 const interviewRoutes = require('./routes/interviewRoutes/interviewRoutes');
 const cvAnalyzerRoutes = require('./routes/candidateRoutes/cvAnalyzerRoute');
-
+const interviewReportRoutes = require('./routes/candidateRoutes/interviewReportRoute')
 const candidateJobRoutes = require('./routes/candidateRoutes/JobRoutes');
 const app = express();
 
@@ -75,7 +75,7 @@ app.use('/api/interview', interviewRoutes);
 app.use('/api/auth/candidate', authCandidateRoutes);
 app.use('/api/candidate/jobs', candidateJobRoutes);
 app.use('/api/candidate/cv', cvAnalyzerRoutes);
-
+app.use('/api/candidate/interviewreport',interviewReportRoutes);
 //Admin Routes
 // app.use('/api/admin',authAdminRoutes)
 app.use('/api/admin/jobs', postJobRoutes);
@@ -83,6 +83,10 @@ app.use('/api/admin/jobs', postJobRoutes);
 // ✅ Test route
 app.get('/', (req, res) => {
   res.send("Welcome to the CharityEase API!");
+});
+
+app.get('/api/test', (req, res) => {
+  res.send('Backend is working!');
 });
 
 // ✅ Error handler (should come after routes)
