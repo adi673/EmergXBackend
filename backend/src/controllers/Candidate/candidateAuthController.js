@@ -269,7 +269,8 @@ exports.updateQuestionnaire = async (req, res) => {
       updateData,
       { new: true, runValidators: true }
     );
-
+    
+    console.log(updatedCandidate)
     if (!updatedCandidate) {
       return res.status(404).json({
         success: false,
