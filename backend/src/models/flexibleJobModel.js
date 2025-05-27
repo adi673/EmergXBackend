@@ -71,7 +71,7 @@ const jobSchema = new mongoose.Schema({
     }
   },
   qualifications: {
-    type: [String],
+    type: String,
   },
   // ✅ Inline enum for tags
   tags: {
