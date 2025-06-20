@@ -46,3 +46,29 @@ ${jd}
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
+
+
+// Update resume link and extracted text
+exports.updateResume = async (req, res) => {
+  try {
+    const  candidateId =req.user.id;
+    const { resumeUrl, extractedData } = req.body;
+
+    const candidate = await Candidate.findByIdAndUpdate(
+      candidateId,
+      {
+        resumeUrl,
+        extractedData
+      },
+      { new: true }
+    );
+
+    if (!candidate) {
+      return res.status(404).json({ message: 'Candidate not found' });
+    }
+
+    res.status(200).json({ message: 'Resume updated successfully', candidate });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating resume', error });
+  }
+};
